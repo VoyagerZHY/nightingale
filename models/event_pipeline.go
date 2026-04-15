@@ -54,7 +54,7 @@ func (e *EventPipeline) Verify() error {
 		return errors.New("name cannot be empty")
 	}
 
-	if e.GroupId <= 0 && len(e.TeamIds) == 0 {
+	if e.UseCase != UseCaseAlertRule && e.GroupId <= 0 && len(e.TeamIds) == 0 {
 		return errors.New("team_ids cannot be empty")
 	}
 

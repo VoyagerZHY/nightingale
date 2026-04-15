@@ -148,7 +148,7 @@ func (rt *Router) addEventPipeline(c *gin.Context) {
 
 	rt.checkEventPipelinePermission(c, &pipeline, "rw")
 	err = models.CreateEventPipeline(rt.Ctx, &pipeline)
-	ginx.NewRender(c).Message(err)
+	ginx.NewRender(c).Data(pipeline.ID, err)
 }
 
 // 更新事件Pipeline

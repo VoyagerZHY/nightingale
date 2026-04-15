@@ -180,13 +180,15 @@ POST /api/n9e/event-pipeline
 #### 校验规则
 
 - `name` 不能为空
-- `group_id <= 0` 时 `team_ids` 不能为空
+- `group_id <= 0` 且 `use_case != "alert_rule"` 时 `team_ids` 不能为空
 
 #### 响应
 
 ```json
-{ "dat": null, "err": "" }
+{ "dat": 123, "err": "" }
 ```
+
+`dat` 为创建成功后的 Pipeline ID。
 
 ---
 
