@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ccfos/nightingale/v6/pkg/ctx"
+	"github.com/toolkits/pkg/logger"
 	"gorm.io/gorm"
 )
 
@@ -114,4 +115,36 @@ func AIAgentGetByUseCase(c *ctx.Context, useCase string) (*AIAgent, error) {
 
 func AIAgentStatistics(c *ctx.Context) (*Statistics, error) {
 	return StatisticsGet(c, &AIAgent{})
+}
+
+// InitDefaultAIAgent ensures at least one agent exists so aichat works even
+// when the admin UI no longer exposes agent management. If the ai_agent table
+// is empty, create a default use_case=chat agent with LLMConfigId=0 — the
+// runtime resolves it to the default LLM via AILLMConfigPickDefault when the
+// chat turn actually runs. Idempotent.
+func InitDefaultAIAgent(c *ctx.Context) {
+	var count int64
+	if err := DB(c).Model(&AIAgent{}).Count(&count).Error; err != nil {
+		logger.Warningf("InitDefaultAIAgent count failed: %v", err)
+		return
+	}
+	if count > 0 {
+		return
+	}
+
+	now := time.Now().Unix()
+	agent := &AIAgent{
+		Name:        "default-chat-agent",
+		Description: "auto-created default chat agent; uses the default LLM config at runtime",
+		UseCase:     "chat",
+		LLMConfigId: 0,
+		Enabled:     true,
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		CreatedBy:   "system",
+		UpdatedBy:   "system",
+	}
+	if err := Insert(c, agent); err != nil {
+		logger.Warningf("InitDefaultAIAgent insert failed: %v", err)
+	}
 }

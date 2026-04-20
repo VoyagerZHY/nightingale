@@ -287,9 +287,24 @@ func (rt *Router) processAssistantMessage(parentCtx context.Context, parentCance
 		return
 	}
 
-	llmCfg, err := models.AILLMConfigGetById(rt.Ctx, agent.LLMConfigId)
-	if err != nil || llmCfg == nil {
-		rt.finishMessage(stateKey, streamID, msg, 400, "referenced LLM config not found")
+	var llmCfg *models.AILLMConfig
+	if agent.LLMConfigId > 0 {
+		llmCfg, err = models.AILLMConfigGetById(rt.Ctx, agent.LLMConfigId)
+		if err != nil {
+			logger.Warningf("[Assistant] load agent LLM config id=%d failed: %v", agent.LLMConfigId, err)
+		}
+	}
+	// Fall back to the default LLM when the agent has no binding (LLMConfigId=0,
+	// e.g. the auto-created default-chat-agent) or when its binding no longer
+	// resolves (the referenced LLM was deleted).
+	if llmCfg == nil {
+		llmCfg, err = models.AILLMConfigPickDefault(rt.Ctx)
+		if err != nil {
+			logger.Warningf("[Assistant] pick default LLM config failed: %v", err)
+		}
+	}
+	if llmCfg == nil {
+		rt.finishMessage(stateKey, streamID, msg, 400, "no LLM configured, please configure one in system settings")
 		return
 	}
 

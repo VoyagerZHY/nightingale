@@ -131,6 +131,21 @@ func AILLMConfigGetEnabled(c *ctx.Context) ([]*AILLMConfig, error) {
 	return lst, err
 }
 
+// AILLMConfigPickDefault returns the LLM config marked is_default=true (and
+// enabled). Used by auto-wired consumers such as the default chat agent when
+// it has no LLMConfigId bound. Returns (nil, nil) when no such row exists.
+func AILLMConfigPickDefault(c *ctx.Context) (*AILLMConfig, error) {
+	var obj AILLMConfig
+	err := DB(c).Where("is_default = ? AND enabled = ?", true, true).First(&obj).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &obj, nil
+}
+
 func (a *AILLMConfig) Create(c *ctx.Context, username string) error {
 	now := time.Now().Unix()
 	a.CreatedAt = now
