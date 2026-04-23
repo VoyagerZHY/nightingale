@@ -45,6 +45,7 @@
 | `active_alert` | 活跃告警列表 | `alert_query` | 3 | 可省略 |
 | `notify_tpl` | 消息模板配置 | `notify_template_generator` | 4 | 可省略 |
 | `datasource` | 数据源配置 | `datasource_diagnose` | 3 | `datasource_type`, `datasource_id`（可选） |
+| `alert_event_detail` | 告警事件详情 | `troubleshooting` | 3 | `event_id`（必填），可选 `rule_id`、`target_ident`、`datasource_id` |
 
 未列出的 `page` 值不展示快捷提问。
 
@@ -128,6 +129,18 @@ action.key = `datasource_diagnose`
 | 1 | Diagnose why datasource connection fails with an x509 certificate error | 数据源连接报 x509 证书错误，如何排查 |
 | 2 | My datasource test returns 401 unauthorized, how to fix | 数据源测试连通返回 401 怎么解决 |
 | 3 | Help me write the correct URL for connecting Nightingale to this datasource | 帮我写这个数据源的正确接入 URL |
+
+### `alert_event_detail` — 告警事件详情
+
+action.key = `troubleshooting`
+
+| # | 英文（缺省） | zh_CN |
+|---|-------------|-------|
+| 1 | Analyze the root cause of this alert event | 分析这条告警事件的根因 |
+| 2 | Find similar historical alerts on the same target/rule | 查找同对象/同规则下的相似历史告警 |
+| 3 | Show other active alerts on the same target around this time | 看下同一对象在这个时间点附近还有哪些活跃告警 |
+
+> `param` 必须携带 `event_id`，后端 `troubleshooting` action 据此读取事件详情；如能一并传入 `rule_id`、`target_ident`、`datasource_id` 可减少二次查询。
 
 ## 新增/修改预置提示词
 
